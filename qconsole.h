@@ -4,7 +4,7 @@
 #include <QIODevice>
 class QFile;
 #ifdef Q_OS_WIN
-#include <QWinEventNotifier>
+class ReadThread;
 #else
 #include <QSocketNotifier>
 #endif
@@ -29,19 +29,20 @@ protected:
 	qint64 readData(char *data, qint64 maxlen) override;
 	qint64 writeData(const char *data, qint64 len) override;
 
+#ifdef Q_OS_UNIX
 private slots:
 	void activated();
+#endif
 
 private:
 #ifdef Q_OS_WIN
-	QWinEventNotifier *_notifier;
+	ReadThread *_readThread;
 #else
 	QSocketNotifier *_notifier;
-#endif
 	QFile *_in;
+#endif
 
-	bool
-	open(OpenMode openMode) override;
+	bool open(OpenMode openMode) override;
 };
 
 #endif // QCONSOLE_H
