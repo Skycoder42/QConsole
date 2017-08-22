@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 
 	QConsole console;
 	QObject::connect(&console, &QConsole::readyRead, [&](){
-		auto data = console.readLine();
+		auto data = console.read(console.bytesAvailable());
 		out->write("Echo: " + data);
 		if(data.contains("exit"))
 			qApp->quit();
@@ -20,5 +20,7 @@ int main(int argc, char *argv[])
 		qCritical() << console.errorString();
 		return EXIT_FAILURE;
 	}
+	out->write("Ready to go!");
+	out->flush();
 	return a.exec();
 }

@@ -1,7 +1,10 @@
 #include "qconsole.h"
+#include <QDebug>
 #include <QFile>
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
+#else
+#include <sys/ioctl.h>
 #endif
 
 QConsole::QConsole(QObject *parent) :
@@ -9,7 +12,7 @@ QConsole::QConsole(QObject *parent) :
 #ifdef Q_OS_WIN
 	_notifier(new QWinEventNotifier(GetStdHandle(STD_INPUT_HANDLE), this)),
 #else
-	_notifier(new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this)),
+	_notifier(new QSocketNotifier(0, QSocketNotifier::Read, this)),
 #endif
 	_in(new QFile(this))
 {
@@ -68,7 +71,20 @@ void QConsole::close()
 
 qint64 QConsole::bytesAvailable() const
 {
-	return QIODevice::bytesAvailable() + _in->bytesAvailable();
+#ifdef Q_OS_WIN
+	DWORD n = -1;
+	if(!PeekNamedPipe(_notifier->handle(), NULL, 0, NULL, &n, NULL)) {
+		qWarning() << "PeekNamedPipe failed with error" << ::GetLastError();
+		return 0;
+	}
+#else
+	int n = -1;
+	if (ioctl(0, FIONREAD, &n) < 0) {
+		qWarning() << "ioctl failed with error" << errno;
+		return 0;
+	}
+#endif
+	return QIODevice::bytesAvailable() + (qint64)n;
 }
 
 QFile *QConsole::qStdOut(QObject *parent)
