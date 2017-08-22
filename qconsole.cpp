@@ -5,6 +5,7 @@
 #include "readthread_win.h"
 #else
 #include <sys/ioctl.h>
+#include <errno.h>
 #endif
 
 QConsole::QConsole(QObject *parent) :
