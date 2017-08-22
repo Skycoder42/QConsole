@@ -71,6 +71,20 @@ qint64 QConsole::bytesAvailable() const
 	return QIODevice::bytesAvailable() + _in->bytesAvailable();
 }
 
+QFile *QConsole::qStdOut(QObject *parent)
+{
+	auto file = new QFile(parent);
+	file->open(stdout, QIODevice::WriteOnly | QIODevice::Unbuffered);
+	return file;
+}
+
+QFile *QConsole::qStdErr(QObject *parent)
+{
+	auto file = new QFile(parent);
+	file->open(stderr, QIODevice::WriteOnly | QIODevice::Unbuffered);
+	return file;
+}
+
 qint64 QConsole::readData(char *data, qint64 maxlen)
 {
 	if(maxlen == 0)
