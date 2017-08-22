@@ -2,17 +2,21 @@
 #define QCONSOLE_H
 
 #include <QIODevice>
+class QFile;
+class QBuffer;
+#ifdef Q_OS_WIN
+#include <QWinEventNotifier>
+#else
 #include <QSocketNotifier>
+#endif
 
-class QConsoleThread;
 class QConsole : public QIODevice
 {
 	Q_OBJECT
 
-	Q_PROPERTY(WriteMode writeMode READ writeMode WRITE setWriteMode)
-
 public:
 	enum WriteModeFlag {
+		WriteNone = 0x00,
 		WriteStdOut = 0x01,
 		WriteStdErr = 0x02,
 		WriteAll = (WriteStdOut | WriteStdErr)
@@ -24,24 +28,33 @@ public:
 	~QConsole();
 
 	bool isSequential() const override;
-	bool open(OpenMode mode = QIODevice::ReadWrite) override;
+	bool open(OpenMode openMode = ReadWrite) override;
+	bool open(OpenMode openMode, WriteMode writeMode);
 	void close() override;
 	qint64 bytesAvailable() const override;
 
 	WriteMode writeMode() const;
 
 public slots:
-	void setWriteMode(WriteMode writeMode);
-
 	void flush();
 
 protected:
 	qint64 readData(char *data, qint64 maxlen) override;
 	qint64 writeData(const char *data, qint64 len) override;
 
+private slots:
+	void activated();
+
 private:
-	QConsoleThread *_consoleThread;
+#ifdef Q_OS_WIN
+	QWinEventNotifier *_notifier;
+#else
 	QSocketNotifier *_notifier;
+#endif
+	QFile *_in;
+	QFile *_out;
+	QFile *_err;
+	QBuffer *_buffer;
 	WriteMode _writeMode;
 };
 

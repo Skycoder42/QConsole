@@ -1,9 +1,7 @@
 HEADERS += \
-	$$PWD/qconsole.h \
-    $$PWD/qconsolethread_p.h
+	$$PWD/qconsole.h
 
 SOURCES += \
-	$$PWD/qconsole.cpp \
-    $$PWD/qconsolethread.cpp
+	$$PWD/qconsole.cpp
 
 INCLUDEPATH += $$PWD
