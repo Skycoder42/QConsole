@@ -14,28 +14,13 @@ class QConsole : public QIODevice
 	Q_OBJECT
 
 public:
-	enum WriteModeFlag {
-		WriteNone = 0x00,
-		WriteStdOut = 0x01,
-		WriteStdErr = 0x02,
-		WriteAll = (WriteStdOut | WriteStdErr)
-	};
-	Q_DECLARE_FLAGS(WriteMode, WriteModeFlag)
-	Q_FLAG(WriteMode)
-
 	explicit QConsole(QObject *parent = nullptr);
 	~QConsole();
 
 	bool isSequential() const override;
-	bool open(OpenMode openMode = ReadWrite) override;
-	bool open(OpenMode openMode, WriteMode writeMode);
+	bool open();
 	void close() override;
 	qint64 bytesAvailable() const override;
-
-	WriteMode writeMode() const;
-
-public slots:
-	void flush();
 
 protected:
 	qint64 readData(char *data, qint64 maxlen) override;
@@ -51,11 +36,9 @@ private:
 	QSocketNotifier *_notifier;
 #endif
 	QFile *_in;
-	QFile *_out;
-	QFile *_err;
-	WriteMode _writeMode;
-};
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QConsole::WriteMode)
+	bool
+	open(OpenMode openMode) override;
+};
 
 #endif // QCONSOLE_H

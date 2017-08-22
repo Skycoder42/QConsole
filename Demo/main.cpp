@@ -9,16 +9,13 @@ int main(int argc, char *argv[])
 	QConsole console;
 	QObject::connect(&console, &QConsole::readyRead, [&](){
 		auto data = console.readLine();
-		console.write(data);
-		console.flush();
+		qDebug() << data;
 		if(data.contains("exit"))
 			qApp->quit();
 	});
-	if(!console.open(QIODevice::ReadWrite, QConsole::WriteAll)) {
+	if(!console.open()) {
 		qCritical() << console.errorString();
 		return EXIT_FAILURE;
 	}
-	console.write("Hello\n");
-
 	return a.exec();
 }
