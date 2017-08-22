@@ -15,13 +15,11 @@ QConsole::QConsole(QObject *parent) :
 	_in(new QFile(this)),
 	_out(new QFile(this)),
 	_err(new QFile(this)),
-	_buffer(new QBuffer(this)),
 	_writeMode(WriteStdOut)
 {
 	_in->setObjectName(QStringLiteral("stdin"));
 	_out->setObjectName(QStringLiteral("stdout"));
 	_err->setObjectName(QStringLiteral("stderr"));
-	_buffer->setObjectName(QStringLiteral("buffer"));
 	_notifier->setEnabled(false);
 #ifdef Q_OS_WIN
 	connect(_notifier, &QWinEventNotifier::activated,
@@ -56,8 +54,6 @@ bool QConsole::open(OpenMode openMode, WriteMode writeMode)
 	if(QIODevice::open(openMode)) {
 		try {
 			if(openMode.testFlag(ReadOnly)) {
-				if(!_buffer->open(QIODevice::ReadWrite))
-					throw _buffer->errorString();
 				if(!_in->open(stdin, ReadOnly | Unbuffered))
 					throw _in->errorString();
 				_notifier->setEnabled(true);
@@ -88,8 +84,6 @@ bool QConsole::open(OpenMode openMode, WriteMode writeMode)
 				_out->close();
 			if(_err->isOpen())
 				_err->close();
-			if(_buffer->isOpen())
-				_buffer->close();
 			return false;
 		}
 	} else
@@ -106,8 +100,6 @@ void QConsole::close()
 			_out->close();
 		if(_err->isOpen())
 			_err->close();
-		if(_buffer->isOpen())
-			_buffer->close();
 	}
 	QIODevice::close();
 }
@@ -132,10 +124,11 @@ void QConsole::flush()
 
 qint64 QConsole::readData(char *data, qint64 maxlen)
 {
-	if(maxlen == 0)
+	if(maxlen == 0) {
+		_notifier->setEnabled(true);
 		return 0;
-	else
-		return _buffer->read(data, maxlen);
+	} else
+		return _in->read(data, maxlen);
 }
 
 qint64 QConsole::writeData(const char *data, qint64 len)
@@ -155,18 +148,9 @@ qint64 QConsole::writeData(const char *data, qint64 len)
 
 	return qMin(resOut, resErr);
 }
-#include <QDebug>
+
 void QConsole::activated()
 {
-#ifdef Q_OS_WIN
-	FlushConsoleInputBuffer(_notifier->handle());
-	auto in = _in->read(1);
-	qDebug() << in;
-	_buffer->buffer().append(in);
-	if(in == "\n")
-		emit readyRead();
-#else
-	_buffer->buffer().append(_in->readLine());
+	_notifier->setEnabled(false);
 	emit readyRead();
-#endif
 }

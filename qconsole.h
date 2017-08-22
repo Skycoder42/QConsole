@@ -3,7 +3,6 @@
 
 #include <QIODevice>
 class QFile;
-class QBuffer;
 #ifdef Q_OS_WIN
 #include <QWinEventNotifier>
 #else
@@ -54,7 +53,6 @@ private:
 	QFile *_in;
 	QFile *_out;
 	QFile *_err;
-	QBuffer *_buffer;
 	WriteMode _writeMode;
 };
 
