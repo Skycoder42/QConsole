@@ -1,5 +1,7 @@
-HEADERS += \
-	$$PWD/qconsole.h \
+PUBLIC_HEADERS += \
+	$$PWD/qconsole.h 
+
+HEADERS += $$PUBLIC_HEADERS \
     $$PWD/readthread_win.h
 
 SOURCES += \
