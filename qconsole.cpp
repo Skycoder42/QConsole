@@ -99,6 +99,13 @@ QFile *QConsole::qStdErr(QObject *parent)
 	return file;
 }
 
+QFile *QConsole::qStdIn(QObject *parent)
+{
+	auto file = new QFile(parent);
+	file->open(stdin, QIODevice::ReadOnly | QIODevice::Unbuffered);
+	return file;
+}
+
 qint64 QConsole::readData(char *data, qint64 maxlen)
 {
 	if(maxlen == 0)

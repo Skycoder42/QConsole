@@ -24,6 +24,7 @@ public:
 
 	static QFile *qStdOut(QObject *parent = nullptr);
 	static QFile *qStdErr(QObject *parent = nullptr);
+	static QFile *qStdIn(QObject *parent = nullptr);
 
 protected:
 	qint64 readData(char *data, qint64 maxlen) override;
