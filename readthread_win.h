@@ -1,8 +1,8 @@
 #ifndef READTHREAD_WIN_H
 #define READTHREAD_WIN_H
 
-#include <QThread>
-#include <QBuffer>
+#include <QtCore/QThread>
+#include <QtCore/QBuffer>
 
 class ReadThread : public QThread
 {
@@ -15,13 +15,13 @@ public:
 	void start();
 	void stop();
 
-signals:
+Q_SIGNALS:
 	void newData();
 
 protected:
 	void run() override;
 
-private slots:
+private Q_SLOTS:
 	void addData(const QByteArray &data);
 
 private:

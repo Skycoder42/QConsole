@@ -1,21 +1,21 @@
 #ifndef QCONSOLE_H
 #define QCONSOLE_H
 
-#include <QIODevice>
+#include <QtCore/QIODevice>
 class QFile;
 #ifdef Q_OS_WIN
 class ReadThread;
 #else
-#include <QSocketNotifier>
+#include <QtCore/QSocketNotifier>
 #endif
 
-class QConsole : public QIODevice
+class Q_CONSOLE_EXPORT QConsole : public QIODevice
 {
 	Q_OBJECT
 
 public:
 	explicit QConsole(QObject *parent = nullptr);
-	~QConsole();
+	~QConsole() override;
 
 	bool isSequential() const override;
 	bool open();
@@ -31,7 +31,7 @@ protected:
 	qint64 writeData(const char *data, qint64 len) override;
 
 #ifdef Q_OS_UNIX
-private slots:
+private Q_SLOTS:
 	void activated();
 #endif
 

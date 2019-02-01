@@ -10,6 +10,6 @@ TARGET = Demo
 
 DEFINES += QT_DEPRECATED_WARNINGS QT_ASCII_CAST_WARNINGS
 
-include(../de_skycoder42_qconsole.pri)
+include(../qconsole.pri)
 
 SOURCES += main.cpp

@@ -5,16 +5,15 @@
 #include "readthread_win.h"
 #else
 #include <sys/ioctl.h>
-#include <errno.h>
 #endif
 
 QConsole::QConsole(QObject *parent) :
 	QIODevice(parent),
 #ifdef Q_OS_WIN
-	_readThread(new ReadThread(this))
+	_readThread{new ReadThread{this}}
 #else
-	_notifier(new QSocketNotifier(0, QSocketNotifier::Read, this)),
-	_in(new QFile(this))
+	_notifier{new QSocketNotifier{0, QSocketNotifier::Read, this}},
+	_in{new QFile{this}}
 #endif
 {
 #ifdef Q_OS_WIN
@@ -31,7 +30,7 @@ QConsole::QConsole(QObject *parent) :
 QConsole::~QConsole()
 {
 	if(isOpen())
-		close();
+		QConsole::close();
 }
 
 bool QConsole::isSequential() const
@@ -78,30 +77,31 @@ qint64 QConsole::bytesAvailable() const
 #else
 	int n = -1;
 	if (ioctl(0, FIONREAD, &n) < 0) {
-		qWarning() << "ioctl failed with error" << errno;
+		qWarning().noquote() << "ioctl failed with error:"
+							 << qt_error_string();
 		return 0;
 	}
-	return QIODevice::bytesAvailable() + (qint64)n;
+	return QIODevice::bytesAvailable() + static_cast<qint64>(n);
 #endif
 }
 
 QFile *QConsole::qStdOut(QObject *parent)
 {
-	auto file = new QFile(parent);
+	auto file = new QFile{parent};
 	file->open(stdout, QIODevice::WriteOnly | QIODevice::Unbuffered);
 	return file;
 }
 
 QFile *QConsole::qStdErr(QObject *parent)
 {
-	auto file = new QFile(parent);
+	auto file = new QFile{parent};
 	file->open(stderr, QIODevice::WriteOnly | QIODevice::Unbuffered);
 	return file;
 }
 
 QFile *QConsole::qStdIn(QObject *parent)
 {
-	auto file = new QFile(parent);
+	auto file = new QFile{parent};
 	file->open(stdin, QIODevice::ReadOnly | QIODevice::Unbuffered);
 	return file;
 }
@@ -111,12 +111,12 @@ qint64 QConsole::readData(char *data, qint64 maxlen)
 	if(maxlen == 0)
 		return 0;
 #ifdef Q_OS_WIN
-	auto res = _readThread->buffer()->read(data, maxlen);
+	return _readThread->buffer()->read(data, maxlen);
 #else
 	auto res = _in->read(data, maxlen);
 	_notifier->setEnabled(true);
-#endif
 	return res;
+#endif
 }
 
 qint64 QConsole::writeData(const char *data, qint64 len)

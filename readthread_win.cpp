@@ -3,8 +3,8 @@
 #include <QDebug>
 
 ReadThread::ReadThread(QObject *parent) :
-	QThread(parent),
-	_buffer(new QBuffer(this))
+	QThread{parent},
+	_buffer{new QBuffer{this}}
 {
 	setTerminationEnabled(true);
 }
@@ -59,7 +59,7 @@ void ReadThread::run()
 void ReadThread::addData(const QByteArray &data)
 {
 	auto &buf = _buffer->buffer();
-	buf = buf.mid(_buffer->pos()) + data;
+	buf = buf.mid(static_cast<int>(_buffer->pos())) + data;
 	_buffer->seek(0);
 	if(buf.size() == data.size())
 		emit newData();
