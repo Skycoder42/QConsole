@@ -38,12 +38,15 @@ void ReadThread::run()
 		return;
 	}
 
-	while(!isInterruptionRequested()) {
+	auto eof = false;
+	while(!eof && !isInterruptionRequested()) {
 		if(in.error() != QFile::NoError)
 			break;
 
 		auto data = in.readLine();
-		if(data.isEmpty())
+		if(in.atEnd())
+			eof = true;
+		else if(data.isEmpty())
 			QThread::msleep(100);
 		else {
 			QMetaObject::invokeMethod(this, "addData", Qt::QueuedConnection,
@@ -52,8 +55,10 @@ void ReadThread::run()
 	}
 
 	in.close();
-	if(!isInterruptionRequested())
+	if(!eof && !isInterruptionRequested())
 		qCritical() << "stdin closed unexpectedly!";
+	if(eof)
+		emit eofTriggered();
 }
 
 void ReadThread::addData(const QByteArray &data)

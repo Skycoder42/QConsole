@@ -17,6 +17,7 @@ public:
 
 Q_SIGNALS:
 	void newData();
+	void eofTriggered();
 
 protected:
 	void run() override;

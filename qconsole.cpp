@@ -19,6 +19,8 @@ QConsole::QConsole(QObject *parent) :
 #ifdef Q_OS_WIN
 	connect(_readThread, &ReadThread::newData,
 			this, &QConsole::readyRead);
+	connect(_readThread, &ReadThread::eofTriggered,
+			this, &QConsole::readChannelFinished);
 #else
 	_in->setObjectName(QStringLiteral("stdin"));
 	_notifier->setEnabled(false);
