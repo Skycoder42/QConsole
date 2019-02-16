@@ -44,6 +44,10 @@ private:
 #endif
 
 	bool open(OpenMode openMode) override;
+
+#ifdef Q_OS_UNIX
+	qint64 nBytes() const;
+#endif
 };
 
 #endif // QCONSOLE_H

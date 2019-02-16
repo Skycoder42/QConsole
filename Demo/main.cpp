@@ -16,11 +16,13 @@ int main(int argc, char *argv[])
 		if(data.contains("exit"))
 			qApp->quit();
 	});
+	QObject::connect(&console, &QConsole::readChannelFinished,
+					 qApp, &QCoreApplication::quit);
 	if(!console.open()) {
 		qCritical() << console.errorString();
 		return EXIT_FAILURE;
 	}
-	out->write("Ready to go!");
+	out->write("Ready to go!\n");
 	out->flush();
 	return a.exec();
 }

@@ -12,7 +12,7 @@ QConsole::QConsole(QObject *parent) :
 #ifdef Q_OS_WIN
 	_readThread{new ReadThread{this}}
 #else
-	_notifier{new QSocketNotifier{0, QSocketNotifier::Read, this}},
+	_notifier{new QSocketNotifier{fileno(stdin), QSocketNotifier::Read, this}},
 	_in{new QFile{this}}
 #endif
 {
@@ -75,13 +75,7 @@ qint64 QConsole::bytesAvailable() const
 #ifdef Q_OS_WIN
 	return QIODevice::bytesAvailable() + _readThread->buffer()->bytesAvailable();
 #else
-	int n = -1;
-	if (ioctl(0, FIONREAD, &n) < 0) {
-		qWarning().noquote() << "ioctl failed with error:"
-							 << qt_error_string();
-		return 0;
-	}
-	return QIODevice::bytesAvailable() + static_cast<qint64>(n);
+	return QIODevice::bytesAvailable() + nBytes();
 #endif
 }
 
@@ -130,7 +124,10 @@ qint64 QConsole::writeData(const char *data, qint64 len)
 void QConsole::activated()
 {
 	_notifier->setEnabled(false);
-	emit readyRead();
+	if(nBytes() <= 0)
+		emit readChannelFinished();
+	else
+		emit readyRead();
 }
 #endif
 
@@ -139,3 +136,16 @@ bool QConsole::open(QIODevice::OpenMode openMode)
 	Q_UNUSED(openMode)
 	return open();
 }
+
+#ifdef Q_OS_UNIX
+qint64 QConsole::nBytes() const
+{
+	int n = -1;
+	if (ioctl(0, FIONREAD, &n) < 0) {
+		qWarning().noquote() << "ioctl failed with error:"
+							 << qt_error_string();
+		return -1;
+	} else
+		return static_cast<qint64>(n);
+}
+#endif
